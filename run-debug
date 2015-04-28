@@ -1,0 +1,17 @@
+#! /bin/bash
+set -e
+
+# Ensure that adb binary is in the path
+if ! which adb > /dev/null; then
+    echo "Cannot find adb: Check that PATH contains platform tools (e.g. \$HOME/Library/Android/sdk/platform-tools)"
+    exit 1
+fi
+
+# Use Gradle to build APK package
+./gradlew assembleDebug
+
+# Install the APK on the virtual device (-r replaces any existing one)
+adb install -r app/build/outputs/apk/app-debug.apk
+
+# Start the main activity
+adb shell am start -n com.node22.breadcrumbs/.MainActivity
