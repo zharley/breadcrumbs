@@ -1,6 +1,27 @@
+# @see https://gist.github.com/iainconnor/8605514
+
+# Gradle generated files
 .gradle
+
+# Local configuration file (sdk path, etc)
 /local.properties
-/.idea/workspace.xml
-/.idea/libraries
-.DS_Store
+
+# Built application files
 /build
+
+# OS-specific files
+.DS_Store
+
+# User-specific configurations
+.idea/libraries/
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/.name
+.idea/compiler.xml
+.idea/copyright/profiles_settings.xml
+.idea/encodings.xml
+.idea/misc.xml
+.idea/modules.xml
+.idea/scopes/scope_settings.xml
+.idea/vcs.xml
+*.iml
