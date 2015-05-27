@@ -60,7 +60,8 @@ public class MapFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_main, container, false);
 
         Util.debug("MapFragment::onCreateView");
-        //HistoryManager.getData();
+        Util.debug("Launching history manager");
+        HistoryManager.getData();
 
         return view;
     }
