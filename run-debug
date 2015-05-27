@@ -4,6 +4,7 @@ set -e
 MY_COLOR_BLUE='\033[0;34m'
 MY_COLOR_BOLD_BLUE='\033[1;34m'
 MY_DIVIDER="- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - "
+MY_APP="com.node22.breadcrumbs"
 
 # Ensure that adb binary is in the path
 if ! which adb > /dev/null; then
@@ -21,7 +22,12 @@ adb install -r app/build/outputs/apk/app-debug.apk
 adb logcat -c
 
 # Start the main activity
-adb shell am start -n com.node22.breadcrumbs/.MainActivity
+adb shell am start -n $MY_APP/.MainActivity
+
+# Get pid
+MY_PID=`adb shell ps | grep com.node22.breadcrumbs | awk '{print $2}'`
+
+echo "PID of running process is: $MY_PID"
 
 # Show dividing line
 echo -e "${MY_COLOR_BLUE}$MY_DIVIDER"
@@ -29,4 +35,4 @@ echo -e "${MY_COLOR_BOLD_BLUE}Begin log messages"
 echo -e "${MY_COLOR_BLUE}$MY_DIVIDER"
 
 # Show log of errors and/or log messages matching package
-adb logcat | ack '^E/AndroidRuntime|^./*com.node22.breadcrumbs'
+adb logcat | ack "^(E/.+|./*$MY_APP)\\($MY_PID\\):"
