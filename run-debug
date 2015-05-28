@@ -12,8 +12,11 @@ if ! which adb > /dev/null; then
     exit 1
 fi
 
-# Use Gradle to build APK package
-./gradlew assembleDebug
+# When no parameter is given, rebuild first
+if [ -z "$1" ]; then
+    # Use Gradle to build APK package
+    ./gradlew assembleDebug
+fi
 
 # Install the APK on the virtual device (-r replaces any existing one)
 adb install -r app/build/outputs/apk/app-debug.apk
@@ -35,4 +38,6 @@ echo -e "${MY_COLOR_BOLD_BLUE}Begin log messages"
 echo -e "${MY_COLOR_BLUE}$MY_DIVIDER"
 
 # Show log of errors and/or log messages matching package
-adb logcat | ack "^(E/.+|./*$MY_APP)\\($MY_PID\\):"
+# e.g.
+# D/com.node22.breadcrumbs( 3745): MainActivity::onCreate
+adb logcat | ack "^(E/.+|./*$MY_APP)\\(\\s*$MY_PID\\):"
