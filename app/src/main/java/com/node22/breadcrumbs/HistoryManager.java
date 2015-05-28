@@ -1,5 +1,6 @@
 package com.node22.breadcrumbs;
 
+import android.net.Uri;
 import android.os.AsyncTask;
 
 import java.io.BufferedReader;
@@ -12,11 +13,19 @@ import java.net.URL;
 /**
  * Created by zharley on 15-05-25.
  */
-public class HistoryManager extends AsyncTask<Void, Void, Void> {
+public class HistoryManager extends AsyncTask<String, Void, Void> {
 
     @Override
-    protected Void doInBackground(Void... params) {
+    protected Void doInBackground(String... params) {
         // @see https://gist.github.com/anonymous/6b306e1f6a21b3718fa4
+        
+        if (params.length == 0) {
+            return null;
+        }
+
+        String feed = params[0];
+
+        Util.debug("Feed parameter: " + feed);
 
         Util.debug("Starting async task...");
 
@@ -28,10 +37,21 @@ public class HistoryManager extends AsyncTask<Void, Void, Void> {
         // Will contain the raw JSON response as a string.
         String forecastJsonStr = null;
         try {
+            Uri uri = Uri.parse("http://api.openweathermap.org/data/2.5/forecast/daily")
+                    .buildUpon()
+                    .appendQueryParameter("q", feed)
+                    .appendQueryParameter("mode", "json")
+                    .appendQueryParameter("units", "metric")
+                    .appendQueryParameter("cnt", Integer.toString(7))
+                    .build();
+
             // Construct the URL for the OpenWeatherMap query
             // Possible parameters are avaiable at OWM's forecast API page, at
             // http://openweathermap.org/API#forecast
-            URL url = new URL("http://api.openweathermap.org/data/2.5/forecast/daily?q=94043&mode=json&units=metric&cnt=7");
+            URL url = new URL(uri.toString());
+
+            Util.debug("The constructed URI is: " + uri.toString());
+
             // Create the request to OpenWeatherMap, and open the connection
             urlConnection = (HttpURLConnection) url.openConnection();
             urlConnection.setRequestMethod("GET");

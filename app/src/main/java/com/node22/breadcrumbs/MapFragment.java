@@ -85,7 +85,7 @@ public class MapFragment extends Fragment {
             Util.debug("Refresh action is selected!");
 
             HistoryManager manager = new HistoryManager();
-            manager.execute();
+            manager.execute("94043");
             return true;
         }
 
