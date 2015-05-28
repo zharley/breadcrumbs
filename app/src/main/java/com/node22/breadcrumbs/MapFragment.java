@@ -14,7 +14,12 @@ import android.view.ViewGroup;
  * Use the {@link MapFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class MapFragment extends Fragment {
+public class MapFragment extends Fragment implements HistoryResponse {
+    @Override
+    public void processFinish(String[] strings) {
+        Util.debug("Process has finished");
+    }
+
     // TODO: Rename parameter arguments, choose names that match
     // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
     private static final String ARG_PARAM1 = "param1";
@@ -84,11 +89,12 @@ public class MapFragment extends Fragment {
         if (id == R.id.action_refresh) {
             Util.debug("Refresh action is selected!");
 
-            HistoryManager manager = new HistoryManager();
+            HistoryManager manager = new HistoryManager(this);
             manager.execute("94043");
             return true;
         }
 
         return super.onOptionsItemSelected(item);
     }
+
 }

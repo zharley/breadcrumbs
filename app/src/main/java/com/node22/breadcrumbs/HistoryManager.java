@@ -20,6 +20,11 @@ import java.text.SimpleDateFormat;
  * Created by zharley on 15-05-25.
  */
 public class HistoryManager extends AsyncTask<String, Void, String[]> {
+    protected HistoryResponse response;
+
+    public HistoryManager(HistoryResponse response) {
+        this.response = response;
+    }
 
     @Override
     protected String[] doInBackground(String... params)  {
@@ -119,9 +124,14 @@ public class HistoryManager extends AsyncTask<String, Void, String[]> {
 
     // @see https://gist.github.com/anonymous/52b191849947d853a50e
 
+    @Override
+    protected void onPostExecute(String[] strings) {
+        this.response.processFinish(strings);
+    }
+
     /* The date/time conversion code is going to be moved outside the asynctask later,
-     * so for convenience we're breaking it out into its own method now.
-     */
+         * so for convenience we're breaking it out into its own method now.
+         */
     private String getReadableDateString(long time){
         // Because the API returns a unix timestamp (measured in seconds),
         // it must be converted to milliseconds in order to be converted to valid date.
