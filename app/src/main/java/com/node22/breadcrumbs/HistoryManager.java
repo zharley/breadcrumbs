@@ -1,5 +1,7 @@
 package com.node22.breadcrumbs;
 
+import android.os.AsyncTask;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -10,10 +12,13 @@ import java.net.URL;
 /**
  * Created by zharley on 15-05-25.
  */
-public class HistoryManager {
+public class HistoryManager extends AsyncTask<Void, Void, Void> {
 
-    public static void getData() {
+    @Override
+    protected Void doInBackground(Void... params) {
         // @see https://gist.github.com/anonymous/6b306e1f6a21b3718fa4
+
+        Util.debug("Starting async task...");
 
         // These two need to be declared outside the try/catch
         // so that they can be closed in the finally block.
@@ -36,7 +41,7 @@ public class HistoryManager {
             StringBuffer buffer = new StringBuffer();
             if (inputStream == null) {
                 // Nothing to do.
-                forecastJsonStr = null;
+                return null;
             }
             reader = new BufferedReader(new InputStreamReader(inputStream));
             String line;
@@ -49,14 +54,14 @@ public class HistoryManager {
 
             if (buffer.length() == 0) {
                 // Stream was empty. No point in parsing.
-                forecastJsonStr = null;
+                return null;
             }
             forecastJsonStr = buffer.toString();
         } catch (IOException e) {
             Util.error(e.toString());
             // If the code didn't successfully get the weather data, there's no point in attemping
             // to parse it.
-            forecastJsonStr = null;
+            return null;
         } finally{
             if (urlConnection != null) {
                 urlConnection.disconnect();
@@ -69,5 +74,7 @@ public class HistoryManager {
                 }
             }
         }
+
+        return null;
     }
 }
