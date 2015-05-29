@@ -8,10 +8,14 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
+import com.google.android.gms.maps.CameraUpdate;
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 /**
@@ -31,14 +35,21 @@ public class HistoryFragment extends Fragment implements HistoryResponse {
         GoogleMap map = mapFragment.getMap();
 
         Util.debug("Adding locations to map");
+
+        LatLngBounds.Builder builder = new LatLngBounds.Builder();
         for (int i = 0; i < locations.length; i++) {
             Location location = locations[i];
-            map.addMarker(
-                    new MarkerOptions().position(
-                        new LatLng(location.getLatitude(), location.getLongitude())).title("Location #" + Integer.toString(i + 1)));
+            LatLng position = new LatLng(location.getLatitude(), location.getLongitude());
+            MarkerOptions marker = new MarkerOptions();
+            marker.position(position).title("Location #" + Integer.toString(i + 1)); 
+            map.addMarker(marker);
+            builder.include(position);
         }
 
-        map.addMarker(new MarkerOptions().position(new LatLng(43.652527, -79.381961)).title("Toronto"));
+        CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(builder.build(), 10);
+        map.animateCamera(cu);
+
+        Toast.makeText(getActivity(), "Breadcrumbs refreshed.", Toast.LENGTH_SHORT).show();
     }
 
     // TODO: Rename parameter arguments, choose names that match
