@@ -16,7 +16,7 @@ import android.view.ViewGroup;
  */
 public class MapFragment extends Fragment implements HistoryResponse {
     @Override
-    public void processFinish(String[] strings) {
+    public void processFinish(Location[] locations) {
         Util.debug("Process has finished");
     }
 
@@ -97,4 +97,10 @@ public class MapFragment extends Fragment implements HistoryResponse {
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        Util.debug("Resume map fragment");
+    }
 }

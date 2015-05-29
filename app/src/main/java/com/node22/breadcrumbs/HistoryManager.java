@@ -10,16 +10,15 @@ import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 
 /**
  * Created by zharley on 15-05-25.
  */
-public class HistoryManager extends AsyncTask<String, Void, String[]> {
+public class HistoryManager extends AsyncTask<String, Void, Location[]> {
     protected HistoryResponse response;
 
     public HistoryManager(HistoryResponse response) {
@@ -27,7 +26,7 @@ public class HistoryManager extends AsyncTask<String, Void, String[]> {
     }
 
     @Override
-    protected String[] doInBackground(String... params)  {
+    protected Location[] doInBackground(String... params)  {
         // @see https://gist.github.com/anonymous/6b306e1f6a21b3718fa4
 
         if (params.length == 0) {
@@ -47,6 +46,8 @@ public class HistoryManager extends AsyncTask<String, Void, String[]> {
 
         int numDays = 7;
 
+        Location[] locations = null;
+
         // Will contain the raw JSON response as a string.
         String forecastJsonStr = null;
         try {
@@ -65,6 +66,7 @@ public class HistoryManager extends AsyncTask<String, Void, String[]> {
 
             Util.debug("The constructed URI is: " + uri.toString());
 
+            /*
             // Create the request to OpenWeatherMap, and open the connection
             urlConnection = (HttpURLConnection) url.openConnection();
             urlConnection.setRequestMethod("GET");
@@ -89,17 +91,20 @@ public class HistoryManager extends AsyncTask<String, Void, String[]> {
                 // Stream was empty. No point in parsing.
                 return null;
             }
-            forecastJsonStr = buffer.toString();
+            locationJSON = buffer.toString();
+            */
 
-            Util.debug("Full JSON returned: " + forecastJsonStr);
+            // Toronto, Hamilton, Kitchener, London, Windsor
+            String locationJSON = " [ { \"latitude\": 43.653226, \"longitude\": -79.3831843, \"timestamp\": \"2012-04-23T18:25:43.511Z\" }, { \"latitude\": 43.243603, \"longitude\": -79.889075, \"timestamp\": \"2012-04-23T18:45:43.511Z\" }, { \"latitude\": 43.434311, \"longitude\": -80.4777469, \"timestamp\": \"2012-04-23T19:30:43.511Z\" }, { \"latitude\": 42.979398, \"longitude\": -81.246138, \"timestamp\": \"2012-04-23T21:00:43.511Z\" }, { \"latitude\": 42.292676, \"longitude\": -82.99333500000002, \"timestamp\": \"2012-04-23T22:33:00.511Z\" } ]";
 
-            String[] result = getWeatherDataFromJson(forecastJsonStr, numDays);
+            Util.debug("Full JSON returned: " + locationJSON);
 
-            for (int i = 0; i < result.length; i++) {
-                Util.debug("Forecast " + Integer.toString(i) + " " + result[i]);
+            locations = getLocationDataFromJson(locationJSON);
+
+            for (int i = 0; i < locations.length; i++) {
+                Util.debug("Location " + Integer.toString(i) + " " +
+                        Double.toString(locations[i].getLatitude()));
             }
-
-            return result;
         } catch (IOException e) {
             Util.error(e.toString());
             // If the code didn't successfully get the weather data, there's no point in attemping
@@ -119,14 +124,14 @@ public class HistoryManager extends AsyncTask<String, Void, String[]> {
             }
         }
 
-        return null;
+        return locations;
     }
 
     // @see https://gist.github.com/anonymous/52b191849947d853a50e
 
     @Override
-    protected void onPostExecute(String[] strings) {
-        this.response.processFinish(strings);
+    protected void onPostExecute(Location[] locations) {
+        this.response.processFinish(locations);
     }
 
     /* The date/time conversion code is going to be moved outside the asynctask later,
@@ -152,75 +157,36 @@ public class HistoryManager extends AsyncTask<String, Void, String[]> {
     }
 
     /**
-     * Take the String representing the complete forecast in JSON Format and
-     * pull out the data we need to construct the Strings needed for the wireframes.
-     *
-     * Fortunately parsing is easy:  constructor takes the JSON string and converts it
-     * into an Object hierarchy for us.
+     * Take the String representing location data in JSON Format and extract relevant
+     * location data.
      */
-    private String[] getWeatherDataFromJson(String forecastJsonStr, int numDays)
-        throws JSONException {
+    private Location[] getLocationDataFromJson(String input) throws JSONException {
+        final String KEY_LATITUDE  = "latitude";
+        final String KEY_LONGITUDE = "longitude";
+        final String KEY_TIMESTAMP = "timestamp";
 
-        // These are the names of the JSON objects that need to be extracted.
-        final String OWM_LIST = "list";
-        final String OWM_WEATHER = "weather";
-        final String OWM_TEMPERATURE = "temp";
-        final String OWM_MAX = "max";
-        final String OWM_MIN = "min";
-        final String OWM_DESCRIPTION = "main";
-
-        JSONObject forecastJson = new JSONObject(forecastJsonStr);
-        JSONArray weatherArray = forecastJson.getJSONArray(OWM_LIST);
-
-        // OWM returns daily forecasts based upon the local time of the city that is being
-        // asked for, which means that we need to know the GMT offset to translate this data
-        // properly.
+        JSONArray locations = new JSONArray(input);
 
         // Since this data is also sent in-order and the first day is always the
         // current day, we're going to take advantage of that to get a nice
         // normalized UTC date for all of our weather.
-
         Time dayTime = new Time();
         dayTime.setToNow();
 
-        // we start at the day returned by local time. Otherwise this is a mess.
-        int julianStartDay = Time.getJulianDay(System.currentTimeMillis(), dayTime.gmtoff);
+        ArrayList<Location> mapLocations = new ArrayList<Location>();
 
-        // now we work exclusively in UTC
-        dayTime = new Time();
+        for(int i = 0; i < locations.length(); i++) {
+            JSONObject location = locations.getJSONObject(i);
 
-        String[] resultStrs = new String[numDays];
-        for(int i = 0; i < weatherArray.length(); i++) {
-            // For now, using the format "Day, description, hi/low"
-            String day;
-            String description;
-            String highAndLow;
+            double latitude = location.getDouble(KEY_LATITUDE);
+            double longitude = location.getDouble(KEY_LONGITUDE);
+            String timestamp = location.getString(KEY_TIMESTAMP);
 
-            // Get the JSON object representing the day
-            JSONObject dayForecast = weatherArray.getJSONObject(i);
+            Util.debug(Integer.toString(i) + ") Timestamp=" + timestamp + ", Latitude=" + latitude + ", Longitude=" + longitude);
 
-            // The date/time is returned as a long.  We need to convert that
-            // into something human-readable, since most people won't read "1400356800" as
-            // "this saturday".
-            long dateTime;
-            // Cheating to convert this to UTC time, which is what we want anyhow
-            dateTime = dayTime.setJulianDay(julianStartDay+i);
-            day = getReadableDateString(dateTime);
-
-            // description is in a child array called "weather", which is 1 element long.
-            JSONObject weatherObject = dayForecast.getJSONArray(OWM_WEATHER).getJSONObject(0);
-            description = weatherObject.getString(OWM_DESCRIPTION);
-
-            // Temperatures are in a child object called "temp".  Try not to name variables
-            // "temp" when working with temperature.  It confuses everybody.
-            JSONObject temperatureObject = dayForecast.getJSONObject(OWM_TEMPERATURE);
-            double high = temperatureObject.getDouble(OWM_MAX);
-            double low = temperatureObject.getDouble(OWM_MIN);
-
-            highAndLow = formatHighLows(high, low);
-            resultStrs[i] = day + " - " + description + " - " + highAndLow;
+            mapLocations.add(new Location(latitude, longitude, dayTime));
         }
 
-        return resultStrs;
+        return mapLocations.toArray(new Location[mapLocations.size()]);
     }
 }
