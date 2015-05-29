@@ -1,7 +1,7 @@
 package com.node22.breadcrumbs;
 
+import android.app.Fragment;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -9,15 +9,36 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
+
 /**
  * A simple {@link Fragment} subclass.
- * Use the {@link MapFragment#newInstance} factory method to
+ * Use the {@link HistoryFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class MapFragment extends Fragment implements HistoryResponse {
+public class HistoryFragment extends Fragment implements HistoryResponse {
     @Override
     public void processFinish(Location[] locations) {
         Util.debug("Process has finished");
+
+        Fragment fragment = getFragmentManager().findFragmentById(R.id.map);
+
+        MapFragment mapFragment = (MapFragment)fragment;
+
+        GoogleMap map = mapFragment.getMap();
+
+        Util.debug("Adding locations to map");
+        for (int i = 0; i < locations.length; i++) {
+            Location location = locations[i];
+            map.addMarker(
+                    new MarkerOptions().position(
+                        new LatLng(location.getLatitude(), location.getLongitude())).title("Location #" + Integer.toString(i + 1)));
+        }
+
+        map.addMarker(new MarkerOptions().position(new LatLng(43.652527, -79.381961)).title("Toronto"));
     }
 
     // TODO: Rename parameter arguments, choose names that match
@@ -39,8 +60,8 @@ public class MapFragment extends Fragment implements HistoryResponse {
      * @return A new instance of fragment MapFragment.
      */
     // TODO: Rename and change types and number of parameters
-    public static MapFragment newInstance(String param1, String param2) {
-        MapFragment fragment = new MapFragment();
+    public static HistoryFragment newInstance(String param1, String param2) {
+        HistoryFragment fragment = new HistoryFragment();
         Bundle args = new Bundle();
         args.putString(ARG_PARAM1, param1);
         args.putString(ARG_PARAM2, param2);
@@ -48,7 +69,7 @@ public class MapFragment extends Fragment implements HistoryResponse {
         return fragment;
     }
 
-    public MapFragment() {
+    public HistoryFragment() {
         // Required empty public constructor
     }
 

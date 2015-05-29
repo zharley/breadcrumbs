@@ -1,11 +1,11 @@
 package com.node22.breadcrumbs;
 
 import android.os.Bundle;
-import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 
-public class MainActivity extends ActionBarActivity {
+public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -14,8 +14,8 @@ public class MainActivity extends ActionBarActivity {
         Util.debug("MainActivity::onCreate");
 
         if (savedInstanceState == null) {
-            getSupportFragmentManager().beginTransaction()
-                    .add(R.id.container, new MapFragment())
+            getFragmentManager().beginTransaction()
+                    .add(R.id.container, new HistoryFragment())
                     .commit();
         }
     }
