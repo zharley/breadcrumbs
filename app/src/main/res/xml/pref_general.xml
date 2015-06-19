@@ -1,0 +1,18 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <CheckBoxPreference
+        android:key="publish_location"
+        android:title="@string/pref_publish_location"
+        android:summary="@string/pref_publish_location"
+        android:defaultValue="true" />
+
+    <EditTextPreference
+        android:key="publish_url"
+        android:title="@string/pref_publish_url"
+        android:defaultValue="@string/pref_default_publish_url"
+        android:selectAllOnFocus="true"
+        android:inputType="textUri"
+        android:singleLine="true"
+        android:maxLines="1" />
+
+</PreferenceScreen>
